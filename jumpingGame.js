@@ -3,22 +3,21 @@ playGame = false
 
 class JumpingGame extends Phaser.Scene 
 {
-
     horse
-    canterSpeed = 200
-    gallopSpeed = 400
+    canterSpeed = 310
+    gallopSpeed = 500
     skidSpeed = 200
-    jumpSpeedX = 0
-    jumpSpeedY = 180
     maxJump = 100
     runHeight = 280
     horseMovements = {
         running: 'running',
+        cantering: 'cantering',
+        galloping: 'galloping',
         jumping: 'jumping',
-        landing: 'landing',
         skidding: 'skidding'
     }
     horseMovement = this.horseMovements.running
+    isSkidding = false
 
     constructor ()
     {
@@ -41,10 +40,10 @@ class JumpingGame extends Phaser.Scene
 
     create ()
     { 
-
         // Inputs
         this.cursors = this.input.keyboard.createCursorKeys();
         this.spaceBar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+
 
         // BG
         this.add.image(444, 234, 'mountains').setScrollFactor(0)
@@ -52,33 +51,68 @@ class JumpingGame extends Phaser.Scene
         this.add.image(1332, 234, 'path')
         this.add.image(2220, 234, 'path')
 
+
         // Music
         const backgroundMusic = this.sound.add('background_music');
         backgroundMusic.loop = true; 
         backgroundMusic.play();
 
+
         // Horse
         this.horse = this.physics.add.sprite(-100, this.runHeight, 'horse', 'canter0000')
-        this.anims.create({
-            key: 'canter',
-            frames: this.anims.generateFrameNumbers('horse', { frames: [
-                'canter0000', 'canter0001', 'canter0002', 'canter0003', 'canter0004', 'canter0005', 'canter0006', 'canter0007', 'canter0008', 'canter0009', 'canter0010', 'canter0011'
-            ] }),
-            frameRate: 24,
-            repeat: -1
-        });
-        this.anims.create({
-            key: 'gallop',
-            frames: this.anims.generateFrameNumbers('horse', { frames: [
-                'gallop0000', 'gallop0001', 'gallop0002', 'gallop0003', 'gallop0004', 'gallop0005', 'gallop0006'
-            ] }),
-            frameRate: 24,
-            repeat: -1
-        });
         this.horse.body.setSize(150, 90, false).setOffset(70, 100);
+            this.anims.create({
+                key: 'canter',
+                frames: this.anims.generateFrameNumbers('horse', { frames: [
+                    'canter0000', 'canter0001', 'canter0002', 'canter0003', 'canter0004', 'canter0005', 'canter0006', 'canter0007', 'canter0008', 'canter0009', 'canter0010', 'canter0011'
+                ] }),
+                frameRate: 20,
+                repeat: -1
+            });
+            this.anims.create({
+                key: 'gallop',
+                frames: this.anims.generateFrameNumbers('horse', { frames: [
+                    'gallop0000', 'gallop0001', 'gallop0002', 'gallop0003', 'gallop0004', 'gallop0005', 'gallop0006'
+                ] }),
+                frameRate: 20,
+                repeat: -1
+            });
+            this.anims.create({
+                key: 'jump',
+                frames: this.anims.generateFrameNumbers('horse', { frames: [
+                    'jump0000', 'jump0001', 'jump0002', 'jump0003', 'jump0004', 'jump0005', 'jump0006', 'jump0007', 'jump0008', 'jump0009', 'jump0010', 'jump0011'
+                ] }),
+                frameRate: 16
+            });
+            this.anims.create({
+                key: 'slideStart',
+                frames: this.anims.generateFrameNumbers('horse', { frames: [
+                    'slide0000', 'slide0001'
+                ] }),
+                frameRate: 20
+            });
+            this.anims.create({
+                key: 'slide',
+                frames: this.anims.generateFrameNumbers('horse', { frames: [
+                    'slide0002', 'slide0003', 'slide0004', 'slide0005', 'slide0006'
+                ] }),
+                frameRate: 20,
+                repeat: -1
+            });
+            this.anims.create({
+                key: 'slideEnd',
+                frames: this.anims.generateFrameNumbers('horse', { frames: [
+                    'slide0007', 'slide0008', 'slide0009'
+                ] }),
+                frameRate: 20
+            });
+
+
+        // Camera
         this.cameras.main.startFollow(this.horse, false, 1, 0, -275, 45).setBounds(0, 0, 2664, 468);
 
 
+        // Gems
         this.gem1 = this.physics.add.image(400, this.runHeight+30, 'gemBlue5')
         this.gem2 = this.physics.add.image(600, this.runHeight-40, 'gemBlue5')
 
@@ -97,16 +131,16 @@ class JumpingGame extends Phaser.Scene
 
         // Jumps
         this.jump1 = this.physics.add.sprite(600, this.runHeight+60, 'jumps', 'wall')
-        this.jump1.body.setSize(10, 50, false).setOffset(27, 50);
+        this.jump1.body.setSize(5, 50, false).setOffset(10, 50);
 
         this.jump2 = this.physics.add.sprite(1500, this.runHeight+60, 'jumps', 'wall')
-        this.jump2.body.setSize(10, 50, false).setOffset(27, 50);
+        this.jump2.body.setSize(5, 50, false).setOffset(10, 50);
 
         this.jumps = this.physics.add.group({immovable: true});
         this.jumps.addMultiple([this.jump1, this.jump2]);
 
         
-        // UI
+        // Start screen
         const start = this.add.image(444, 234, 'start').setScrollFactor(0)
         const startInteractive = this.add.graphics().setInteractive(new Phaser.Geom.Rectangle(286, 274, 325, 45), Phaser.Geom.Rectangle.Contains);
             startInteractive.on('pointerdown', function (pointer)
@@ -116,8 +150,9 @@ class JumpingGame extends Phaser.Scene
             });
 
 
+        // UI
         const UI = this.add.image(443, 234, 'UI').setScrollFactor(0)
-        // music button
+        // Music button
         const musicButton = this.add.sprite(871, 453, 'music_button', 'music_on').setInteractive({ pixelPerfect: true }).setScale(0.7).setScrollFactor(0);
             musicButton.on('pointerdown', function (pointer)
             {
@@ -139,58 +174,100 @@ class JumpingGame extends Phaser.Scene
     {
         if (playGame) {
             // Horse movement
-            if (this.horseMovement !== this.horseMovements.jumping && this.horseMovement !== this.horseMovements.landing) {
-                if (this.horseMovement === this.horseMovements.skidding) {
-                    // Horse skid
-                    this.horse.setVelocityX(this.canterSpeed);
-                    this.horse.setFrame('slide')   
-                }
-                else if (this.cursors.right.isDown)
-                {
-                    // Horse gallop
-                    this.horse.setVelocityX(this.gallopSpeed);
-                    this.horse.setFrame('gallop0001')
-                }
-                else {
-                    // Horse canter
-                    this.horse.setVelocityX(this.canterSpeed);
-                    this.horse.setFrame('canter0009')
+            if (this.horseMovement === this.horseMovements.jumping) {
+                // Adjust horse hitbox position whilst jumping
+                switch (this.horse.frame.name) {
+                    case 'jump0001':
+                        this.horse.body.setSize(150, 90, false).setOffset(90, 85);
+                        break;
+                    case 'jump0002':
+                        this.horse.body.setSize(150, 90, false).setOffset(110, 50);
+                        break;
+                    case 'jump0003':
+                        this.horse.body.setSize(150, 90, false).setOffset(110, 40);
+                        break;
+                    case 'jump0004':
+                        this.horse.body.setSize(150, 90, false).setOffset(110, 35);
+                        break;
+                    case 'jump0005':
+                        this.horse.body.setSize(150, 90, false).setOffset(110, 35);
+                        break;
+                    case 'jump0006':
+                        this.horse.body.setSize(150, 90, false).setOffset(110, 35);
+                        break;
+                    case 'jump0007':
+                        this.horse.body.setSize(150, 90, false).setOffset(110, 35);
+                        break;
+                    case 'jump0008':
+                        this.horse.body.setSize(150, 90, false).setOffset(115, 40);
+                        break;
+                    case 'jump0009':
+                        this.horse.body.setSize(150, 90, false).setOffset(110, 50);
+                        break;
+                    case 'jump0010':
+                        this.horse.body.setSize(150, 90, false).setOffset(110, 70);
+                        break;
+                        
+                    case 'jump0011':
+                        this.horse.body.setSize(150, 90, false).setOffset(90, 100);
+                        this.horseMovement = this.horseMovements.running
+                        break;
+                
+                    default:
+                        this.horse.body.setSize(150, 90, false).setOffset(90, 100);
+                        break;
                 }
             }
             else {
-                // Speed boost while jumping
-                // Horse canter
-                this.horse.setVelocityX(this.canterSpeed + this.jumpSpeedX);
+                if (this.isSkidding) {
+                    // Horse skid
+                    if (this.horseMovement !== this.horseMovements.skidding) {
+                        this.horseMovement = this.horseMovements.skidding
+                        this.horse.setVelocityX(this.canterSpeed);
+                        this.horse.body.setSize(150, 90, false).setOffset(70, 100);
+                        this.horse.play('slideStart') 
+                    }
+                    
+                    // Loop slide animation while skidding
+                    if (this.horse.frame.name === 'slide0001') {
+                        this.horse.play('slide') 
+                    }
 
-                // Horse gallop
-                if (this.cursors.right.isDown)
+                    this.isSkidding = false
+                }
+                else if (this.horseMovement === this.horseMovements.skidding)
                 {
-                    this.horse.setVelocityX(this.gallopSpeed + this.jumpSpeedX);
+                    // End slide animation and continue running afterdone skidding
+                    if (this.horse.frame.name === 'slide0009') {
+                        this.horseMovement = this.horseMovements.running
+                    }
+                    else if (this.horse.frame.name !== 'slide0007' && this.horse.frame.name !== 'slide0008') {
+                        this.horse.play('slideEnd')
+                    }
+                }
+                else if (this.cursors.right.isDown && this.horseMovement !== this.horseMovements.galloping)
+                {
+                    // Horse gallop when right arrow key is down
+                    this.horseMovement = this.horseMovements.galloping
+                    this.horse.setVelocityX(this.gallopSpeed);
+                    this.horse.body.setSize(150, 90, false).setOffset(70, 100);
+                    this.horse.play('gallop')
+                }
+                else if (!this.cursors.right.isDown && this.horseMovement !== this.horseMovements.cantering) {
+                    // Horse canter if right arrow key is not down
+                    this.horseMovement = this.horseMovements.cantering
+                    this.horse.setVelocityX(this.canterSpeed);
+                    this.horse.body.setSize(150, 90, false).setOffset(70, 100);
+                    this.horse.play('canter')
+                }
+                else if (this.spaceBar.isDown) {
+                    // Horse jump if spacebar is pressed
+                    this.horseMovement = this.horseMovements.jumping
+                    this.horse.play('jump')
                 }
             }
 
-            if (this.spaceBar.isDown && this.horseMovement === this.horseMovements.running) {
-                this.horseMovement = this.horseMovements.jumping
-                jump(this.horse, -this.jumpSpeedY)
-                this.horse.setFrame('jump0003')
-            }
-            else if (this.horseMovement === this.horseMovements.jumping && this.horse.y < this.runHeight - this.maxJump) {
-                this.horseMovement = this.horseMovements.landing
-                jump(this.horse, this.jumpSpeedY)
-                this.horse.setFrame('jump0010')
-            }
-            else if ((this.horseMovement === this.horseMovements.landing && this.horse.y > this.runHeight) || this.horseMovement === this.horseMovements.skidding) {
-                this.horseMovement = this.horseMovements.running
-                this.horse.y = this.runHeight
-                jump(this.horse, 0)
-            }
-
-            function jump(horse, speedY) {
-                horse.setVelocityY(speedY);
-            }
-
             // Gems
-
             this.gems.getChildren().forEach(gem => {
                 this.physics.overlap(
                     this.horse,
@@ -204,7 +281,9 @@ class JumpingGame extends Phaser.Scene
             this.physics.overlap(
                 this.horse,
                 this.jumps,
-                function() {this.horseMovement = this.horseMovements.skidding},
+                function() {
+                        this.isSkidding = true
+                },
                 null,
                 this);
         }
