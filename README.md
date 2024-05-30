@@ -16,7 +16,6 @@ The following are a few ways to set up a server locally (on your own computer):
 - If you have [VSCode](https://code.visualstudio.com/) installed, install the Live Server extension in VSCode, open this project in VSCode and then press 'Go Live' in the bottom right to open the game in the browser.
 
 - If you have python installed (it should be preinstalled on Macs), navigate to the project folder and run `python -m SimpleHTTPServer 8080` (or `python -m http.server 8080`	for python version 3).
-  ```
 
 - Some other options are also listed [here](https://blog.ourcade.co/posts/2020/5-local-web-server-get-started-phaser-3/).
 

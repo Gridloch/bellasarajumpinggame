@@ -36,6 +36,8 @@ class JumpingGame extends Phaser.Scene
         this.load.atlas('horse', './images/horse.png', './images/horse.json');
         this.load.atlas('jumps', './images/jumps.png', './images/jumps.json');
         this.load.image('gemBlue5', './images/gemBlue5.png');
+
+        this.load.image('Level1', './images/Level1.png');
     }
 
     create ()
@@ -50,6 +52,7 @@ class JumpingGame extends Phaser.Scene
         this.add.image(444, 234, 'path')
         this.add.image(1332, 234, 'path')
         this.add.image(2220, 234, 'path')
+        this.add.image(0, 0, 'Level1').setOrigin(0, 0).setAlpha(.8)
 
 
         // Music
@@ -109,7 +112,7 @@ class JumpingGame extends Phaser.Scene
 
 
         // Camera
-        this.cameras.main.startFollow(this.horse, false, 1, 0, -275, 45).setBounds(0, 0, 2664, 468);
+        this.cameras.main.startFollow(this.horse, false, 1, 0, -275, 45).setBounds(0, 0, 22941, 468);
 
 
         // Gems
