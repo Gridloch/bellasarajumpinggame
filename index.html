@@ -41,7 +41,6 @@
                 xmlHttp.onload = function() {
                     const myObj = JSON.parse(this.responseText);
                     langData = myObj
-                    // console.log(langData)
                 }
                 xmlHttp.open("GET", `./lang/${lang}.json`);
                 xmlHttp.send();
@@ -57,7 +56,7 @@
                     physics: {
                         default: 'arcade',
                         arcade: {
-                            debug: true
+                            // debug: true
                         }
                     },
                     scene: [

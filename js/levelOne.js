@@ -3,7 +3,7 @@ class LevelOne extends Phaser.Scene
 
     score = 0
     horse
-    canterSpeed = 0//310
+    canterSpeed = 310
     gallopSpeed = 500
     skidSpeed = 200
     runHeight = 280
@@ -25,12 +25,9 @@ class LevelOne extends Phaser.Scene
 
     preload ()
     {
-        this.load.image('start', './images/start_screen.png');
         this.load.image('mountains', './images/mountains.png');
         this.load.image('path', './images/path.png');
-        this.load.image('UI', './images/UI.png');
-        this.load.atlas('music_button', './images/music.png', './images/music.json');
-        this.load.audio('background_music', ['./game_soundtrack.mp3']);
+        this.load.image('scoreBoard', './images/scoreBoard.png');
 
         this.load.atlas('horse', './images/horse.png', './images/horse.json');
         this.load.atlas('jumps', './images/jumps.png', './images/jumps.json');
@@ -57,15 +54,36 @@ class LevelOne extends Phaser.Scene
         this.add.image(0, 0, 'Level1').setOrigin(0, 0).setAlpha(.6) 
 
 
-        // Music
-        const backgroundMusic = this.sound.add('background_music');
-        backgroundMusic.loop = true; 
-        backgroundMusic.play();
+        // Display
+        this.add.image(444, 30, 'scoreBoard').setScrollFactor(0) 
+        // Horseshoe Display
+        this.horseshoeText = this.add.text(0, 0, 'Static Text Object', { fontFamily: 'Arial', fontSize: 30, color: '#ffffff', align: 'center' }).setScrollFactor(0);
+        this.horseshoeText.text = "0 x ";
+        this.horseshoeText.setPosition(320-this.horseshoeText.width/2, 35-this.horseshoeText.height/2);
+        // Score Display
+        this.scoreNameText = this.add.text(0, 0, 'Static Text Object', { fontFamily: 'Arial', fontSize: 10, color: '#ffffff', align: 'center' }).setScrollFactor(0);
+        this.scoreNameText.text = langData.score;
+        this.scoreNameText.setPosition(445-this.scoreNameText.width/2, 18-this.scoreNameText.height/2);
+
+        this.scoreText = this.add.text(0, 0, 'Static Text Object', { fontFamily: 'Arial', fontSize: 30, color: '#ffffff', align: 'center' }).setScrollFactor(0);
+        this.scoreText.text = "0";
+        this.scoreText.setPosition(445-this.scoreText.width/2, 40-this.scoreText.height/2);
+        // Clock
+        this.clock = this.plugins.get('rexclockplugin').add(this, config);
+        this.clock.start();
+        // Display
+        this.clockNameText = this.add.text(0, 0, 'Static Text Object', { fontFamily: 'Arial', fontSize: 10, color: '#ffffff', align: 'center' }).setScrollFactor(0);
+        this.clockNameText.text = langData.time;
+        this.clockNameText.setPosition(570-this.scoreText.width/2, 30-this.scoreText.height/2);
+
+        this.timerText = this.add.text(443, 234, 'Static Text Object', { fontFamily: 'Arial', fontSize: 30, color: '#ffffff', align: 'center' }).setScrollFactor(0)//.setVisible(false);
+        this.timerText.text = "0:00";
+        this.timerText.setPosition(575-this.timerText.width/2, 40-this.timerText.height/2);
 
 
         // Horse
-        // this.horse = this.physics.add.sprite(-100, this.runHeight, 'horse', 'canter0000')
-        this.horse = this.physics.add.sprite(this.levelEnd-300, this.runHeight, 'horse', 'canter0000')
+        this.horse = this.physics.add.sprite(-100, this.runHeight, 'horse', 'canter0000')
+        // this.horse = this.physics.add.sprite(5500, this.runHeight, 'horse', 'canter0000')
         this.horse.body.setSize(150, 90, false).setOffset(70, 100);
             this.anims.create({
                 key: 'canter',
@@ -121,6 +139,7 @@ class LevelOne extends Phaser.Scene
         // Start and End Gates
         this.add.image(this.levelEnd - 83, 270, 'endGate').setOrigin(0, .5)
 
+
         // Gems
         this.gemsArray = [
             this.physics.add.sprite(728, 210, 'gems', 'gemBlue20'),
@@ -141,15 +160,17 @@ class LevelOne extends Phaser.Scene
 
             this.physics.add.sprite(3590, 340, 'gems', 'gemPink10'),
 
-            this.physics.add.sprite(4350, 340, 'gems', 'gemPink10'),
-            this.physics.add.sprite(4485, 280, 'gems', 'gemPink10'),
-            this.physics.add.sprite(4560, 245, 'gems', 'gemPink40'),
+            this.physics.add.sprite(4355, 345, 'gems', 'gemPink10'),
+            this.physics.add.sprite(4485, 285, 'gems', 'gemPink10'),
+            this.physics.add.sprite(4560, 250, 'gems', 'gemPink40'),
 
             this.physics.add.sprite(4910, 330, 'gems', 'gemBlue5'),
             this.physics.add.sprite(4950, 275, 'gems', 'gemBlue5'),
-            this.physics.add.sprite(5030, 230, 'gems', 'gemBlue35'),
+            this.physics.add.sprite(5035, 230, 'gems', 'gemBlue35'),
 
-            this.physics.add.sprite(5420, 260, 'gems', 'gemPink25')
+            this.physics.add.sprite(5423, 265, 'gems', 'gemPink25'),
+
+            this.physics.add.sprite(5835, 250, 'gems', 'gemBlue50')
         ]
         
         this.gems = this.physics.add.group({immovable: true});
@@ -189,6 +210,15 @@ class LevelOne extends Phaser.Scene
 
     update ()
     {
+        function millisToMinutesAndSeconds(millis) {
+            var minutes = Math.floor(millis / 60000);
+            var seconds = ((millis % 60000) / 1000).toFixed(0);
+            return minutes + ":" + (seconds < 10 ? '0' : '') + seconds;
+          }
+
+        this.timerText.text = millisToMinutesAndSeconds(this.clock.now)
+
+
         // Horse movement
         if (this.horseMovement === this.horseMovements.jumping) {
             // Adjust horse hitbox position whilst jumping
@@ -306,7 +336,7 @@ class LevelOne extends Phaser.Scene
                                 this.score += 20
                                 break;
                             case "gemPink25":
-                                this.score += 23
+                                this.score += 25
                                 break;
                             case "gemYellow30":
                                 this.score += 30
@@ -344,7 +374,8 @@ class LevelOne extends Phaser.Scene
                                 break;
                         }
 
-                        console.log(this.score)
+                        this.scoreText.text = this.score
+                        this.scoreText.setPosition(445-this.scoreText.width/2, 40-this.scoreText.height/2);
                     }
                 },
                 null,

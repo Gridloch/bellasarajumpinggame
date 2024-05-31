@@ -1,5 +1,6 @@
 playMusic = true
 playGame = false
+backgroundMusic = null
 
 
 class JumpingGameStart extends Phaser.Scene 
@@ -15,10 +16,18 @@ class JumpingGameStart extends Phaser.Scene
         this.load.image('UI', './images/UI.png');
         this.load.atlas('music_button', './images/music.png', './images/music.json');
         this.load.audio('background_music', ['./game_soundtrack.mp3']);
+        this.load.plugin('rexclockplugin', 'https://raw.githubusercontent.com/rexrainbow/phaser3-rex-notes/master/dist/rexclockplugin.min.js', true);
+
     }
 
     create ()
     {
+        // Music
+        backgroundMusic = this.sound.add('background_music');
+        backgroundMusic.loop = true; 
+        backgroundMusic.play();
+
+
         // Start screen
         const start = this.add.image(444, 234, 'start').setScrollFactor(0)
         const startInteractive = this.add.graphics().setInteractive(new Phaser.Geom.Rectangle(286, 274, 325, 45), Phaser.Geom.Rectangle.Contains);
