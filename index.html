@@ -6,7 +6,8 @@
         <meta charset="UTF-8" />
         <script src="//cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.js"></script>
         <script src="https://unpkg.com/@esotericsoftware/spine-phaser@4.1.*/dist/iife/spine-phaser.js"></script>
-        <script src="./jumpingGame.js"></script> 
+        <script src="./js/startScreen.js"></script> 
+        <script src="./js/levelOne.js"></script> 
         <style type="text/css">
             body {
                 margin: 0;
@@ -18,7 +19,34 @@
         <div id="gameDiv" style="padding-top: 10px; padding-bottom: 10px;">
             <script type="text/javascript">
 
-                let loadInto = `Stables`
+
+                // Gets lang file
+                const searchQueryString = window.location.search;
+                const urlParameters = new URLSearchParams(searchQueryString);
+                lang = urlParameters.get('lang')
+
+                function urlExists(url)
+                {
+                    var http = new XMLHttpRequest();
+                    http.open('HEAD', url, false);
+                    http.send();
+                    return http.status!=404;
+                }
+
+                if (!lang || !urlExists(`./lang/${lang}.json`)) {
+                    lang ='en'
+                }
+                let langData
+                const xmlHttp = new XMLHttpRequest();
+                xmlHttp.onload = function() {
+                    const myObj = JSON.parse(this.responseText);
+                    langData = myObj
+                    // console.log(langData)
+                }
+                xmlHttp.open("GET", `./lang/${lang}.json`);
+                xmlHttp.send();
+
+
 
                 let config = {
                     parent: "gameDiv",
@@ -26,19 +54,15 @@
                     width: 886,
                     height: 468,
                     backgroundColor: '#110c27',
-                    plugins: {
-                        scene: [
-                        { key: "spine.SpinePlugin", plugin: spine.SpinePlugin, mapping: "spine" }
-                        ]
-                    },
                     physics: {
                         default: 'arcade',
                         arcade: {
-                            // debug: true
+                            debug: true
                         }
                     },
                     scene: [
-                        JumpingGame
+                        JumpingGameStart,
+                        LevelOne
                     ]
                 };
 
