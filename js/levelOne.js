@@ -17,6 +17,8 @@ class LevelOne extends Phaser.Scene
     horseMovement = this.horseMovements.running
     isSkidding = false
     levelEnd = 22941
+    levelTime = 60
+    done = false
 
     constructor ()
     {
@@ -35,7 +37,7 @@ class LevelOne extends Phaser.Scene
         this.load.image('endGate', './images/endGate.png');
 
         // Level reference
-        this.load.image('Level1', './images/Level1.png');
+        // this.load.image('Level1', './images/Level1.png');
     }
 
     create ()
@@ -74,8 +76,7 @@ class LevelOne extends Phaser.Scene
         // Display
         this.clockNameText = this.add.text(0, 0, 'Static Text Object', { fontFamily: 'Arial', fontSize: 10, color: '#ffffff', align: 'center' }).setScrollFactor(0);
         this.clockNameText.text = langData.time;
-        this.clockNameText.setPosition(570-this.scoreText.width/2, 30-this.scoreText.height/2);
-
+        this.clockNameText.setPosition(570-this.clockNameText.width/2, 18-this.clockNameText.height/2);
         this.timerText = this.add.text(443, 234, 'Static Text Object', { fontFamily: 'Arial', fontSize: 30, color: '#ffffff', align: 'center' }).setScrollFactor(0)//.setVisible(false);
         this.timerText.text = "0:00";
         this.timerText.setPosition(575-this.timerText.width/2, 40-this.timerText.height/2);
@@ -83,8 +84,7 @@ class LevelOne extends Phaser.Scene
 
         // Horse
         this.horse = this.physics.add.sprite(-100, this.runHeight, 'horse', 'canter0000')
-        // this.horse = this.physics.add.sprite(5500, this.runHeight, 'horse', 'canter0000')
-        this.horse.body.setSize(150, 90, false).setOffset(70, 100);
+        this.horse.body.setSize(150, 95, false).setOffset(70, 100);
             this.anims.create({
                 key: 'canter',
                 frames: this.anims.generateFrameNumbers('horse', { frames: [
@@ -137,7 +137,8 @@ class LevelOne extends Phaser.Scene
 
 
         // Start and End Gates
-        this.add.image(this.levelEnd - 83, 270, 'endGate').setOrigin(0, .5)
+        this.endGate = this.physics.add.image(this.levelEnd - 83, 270, 'endGate').setOrigin(0, .5)
+        this.endGate.body.setOffset(70, 0);
 
 
         // Gems
@@ -170,7 +171,115 @@ class LevelOne extends Phaser.Scene
 
             this.physics.add.sprite(5423, 265, 'gems', 'gemPink25'),
 
-            this.physics.add.sprite(5835, 250, 'gems', 'gemBlue50')
+            this.physics.add.sprite(5835, 250, 'gems', 'gemBlue50'),
+
+            this.physics.add.sprite(6320, 260, 'gems', 'gemBlue35'),
+
+            this.physics.add.sprite(6600, 330, 'gems', 'gemBlue20'),
+            this.physics.add.sprite(6745, 340, 'gems', 'gemBlue5'),
+
+            this.physics.add.sprite(7560, 320, 'gems', 'gemPink10'),
+            this.physics.add.sprite(7605, 275, 'gems', 'gemPink10'),
+            this.physics.add.sprite(7660, 245, 'gems', 'gemPink10'),
+            this.physics.add.sprite(7725, 235, 'gems', 'gemPink40'),
+
+            this.physics.add.sprite(8225, 340, 'gems', 'gemYellow15'),
+
+            this.physics.add.sprite(8475, 265, 'gems', 'gemBlue5'),
+            this.physics.add.sprite(8515, 230, 'gems', 'gemBlue5'),
+            this.physics.add.sprite(8515, 320, 'gems', 'gemBlue5'),
+            this.physics.add.sprite(8565, 205, 'gems', 'gemBlue5'),
+            this.physics.add.sprite(8560, 270, 'gems', 'gemPink40'),
+            this.physics.add.sprite(8565, 340, 'gems', 'gemBlue5'),
+            this.physics.add.sprite(8615, 230, 'gems', 'gemBlue5'),
+            this.physics.add.sprite(8615, 320, 'gems', 'gemBlue5'),
+            this.physics.add.sprite(8645, 265, 'gems', 'gemBlue5'),
+
+            this.physics.add.sprite(9105, 330, 'gems', 'gemBlue65'),
+
+            this.physics.add.sprite(9505, 260, 'gems', 'gemPink10'),
+
+            this.physics.add.sprite(10130, 360, 'gems', 'gemBlue5'),
+            this.physics.add.sprite(10180, 315, 'gems', 'gemPink10'),
+            this.physics.add.sprite(10250, 275, 'gems', 'gemBlue5'),
+            this.physics.add.sprite(10310, 240, 'gems', 'gemPink10'),
+            this.physics.add.sprite(10355, 215, 'gems', 'gemYellow75'),
+
+            this.physics.add.sprite(10870, 290, 'gems', 'gemBlue20'),
+
+            this.physics.add.sprite(11090, 260, 'gems', 'gemPink40'),
+            this.physics.add.sprite(11160, 260, 'gems', 'gemPink40'),
+
+            this.physics.add.sprite(11630, 220, 'gems', 'gemBlue35'),
+
+            this.physics.add.sprite(12095, 220, 'gems', 'gemPink55'),
+            this.physics.add.sprite(12235, 325, 'gems', 'gemPink70'),
+            this.physics.add.sprite(12430, 220, 'gems', 'gemPink55'),
+
+            this.physics.add.sprite(12745, 210, 'gems', 'gemYellow30'),
+
+            this.physics.add.sprite(13115, 255, 'gems', 'gemBlue20'),
+            this.physics.add.sprite(13295, 345, 'gems', 'gemBlue20'),
+            this.physics.add.sprite(13450, 300, 'gems', 'gemBlue20'),
+
+            this.physics.add.sprite(13900, 260, 'gems', 'gemPink10'),
+            this.physics.add.sprite(14035, 225, 'gems', 'gemYellow45'),
+
+            this.physics.add.sprite(14380, 345, 'gems', 'gemBlue20'),
+
+            this.physics.add.sprite(14930, 345, 'gems', 'gemBlue20'),
+
+            this.physics.add.sprite(15375, 270, 'gems', 'gemBlue5'),
+            this.physics.add.sprite(15445, 290, 'gems', 'gemBlue5'),
+            this.physics.add.sprite(15490, 345, 'gems', 'gemBlue5'),
+            this.physics.add.sprite(15525, 290, 'gems', 'gemBlue5'),
+            this.physics.add.sprite(15590, 270, 'gems', 'gemBlue5'),
+
+            this.physics.add.sprite(16315, 235, 'gems', 'gemPink10'),
+            this.physics.add.sprite(16430, 235, 'gems', 'gemPink10'),
+            this.physics.add.sprite(16535, 235, 'gems', 'gemPink10'),
+            this.physics.add.sprite(16650, 235, 'gems', 'gemPink10'),
+
+            this.physics.add.sprite(16850, 260, 'gems', 'gemBlue20'),
+
+            this.physics.add.sprite(17230, 300, 'gems', 'gemPink10'),
+            this.physics.add.sprite(17280, 255, 'gems', 'gemPink10'),
+            this.physics.add.sprite(17355, 225, 'gems', 'gemPink10'),
+            this.physics.add.sprite(17430, 215, 'gems', 'gemYellow45'),
+
+            this.physics.add.sprite(18170, 215, 'gems', 'gemYellow45'),
+            this.physics.add.sprite(18180, 165, 'gems', 'gemBlue5'),
+            this.physics.add.sprite(18180, 265, 'gems', 'gemBlue5'),
+            this.physics.add.sprite(18210, 190, 'gems', 'gemBlue5'),
+            this.physics.add.sprite(18210, 240, 'gems', 'gemBlue5'),
+            this.physics.add.sprite(18240, 215, 'gems', 'gemBlue5'),
+
+            this.physics.add.sprite(18615, 325, 'gems', 'gemBlue20'),
+            this.physics.add.sprite(18700, 280, 'gems', 'gemBlue20'),
+
+            this.physics.add.sprite(19325, 270, 'gems', 'gemBlue20'),
+            this.physics.add.sprite(19500, 215, 'gems', 'gemBlue35'),
+            this.physics.add.sprite(19670, 215, 'gems', 'gemBlue35'),
+            this.physics.add.sprite(19800, 280, 'gems', 'gemPink55'),
+            this.physics.add.sprite(19970, 215, 'gems', 'gemBlue35'),
+            this.physics.add.sprite(20185, 215, 'gems', 'gemBlue35'),
+
+            this.physics.add.sprite(20650, 200, 'gems', 'gemPink10'),
+            this.physics.add.sprite(20650, 340, 'gems', 'gemPink10'),
+
+            this.physics.add.sprite(20950, 300, 'gems', 'gemYellow75'),
+
+            this.physics.add.sprite(21430, 325, 'gems', 'gemPink10'),
+
+            this.physics.add.sprite(21835, 325, 'gems', 'gemPink10'),
+
+            this.physics.add.sprite(22150, 330, 'gems', 'gemYellow60'),
+            this.physics.add.sprite(22240, 265, 'gems', 'gemPink10'),
+            this.physics.add.sprite(22315, 265, 'gems', 'gemBlue5'),
+            this.physics.add.sprite(22420, 220, 'gems', 'gemPink10'),
+            this.physics.add.sprite(22495, 220, 'gems', 'gemBlue5'),
+            this.physics.add.sprite(22590, 265, 'gems', 'gemPink10'),
+            this.physics.add.sprite(22665, 265, 'gems', 'gemBlue5')
         ]
         
         this.gems = this.physics.add.group({immovable: true});
@@ -178,14 +287,80 @@ class LevelOne extends Phaser.Scene
 
 
         // Jumps
-        // this.jump1 = this.physics.add.sprite(600, this.runHeight+60, 'jumps', 'wall')
-        // this.jump1.body.setSize(5, 50, false).setOffset(10, 50);
+        this.jumpsArray = [
+            this.physics.add.sprite(2285, 360, 'jumps', 'waterTrough'),
+            this.physics.add.sprite(5010, 350, 'jumps', 'woodenFence'),
+            this.physics.add.sprite(5836, 360, 'jumps', 'hayBale'),
+            this.physics.add.sprite(7685, 335, 'jumps', 'wall'),
+            this.physics.add.sprite(8970, 345, 'jumps', 'woodenFence'),
+            this.physics.add.sprite(11120, 360, 'jumps', 'hedge'),
+            this.physics.add.sprite(12435, 350, 'jumps', 'woodenFence'),
+            this.physics.add.sprite(13130, 360, 'jumps', 'hayBale'),
+            this.physics.add.sprite(13965, 355, 'jumps', 'wall'),
+            this.physics.add.sprite(16020, 365, 'jumps', 'stump'),
+            this.physics.add.sprite(17380, 335, 'jumps', 'wall'),
+            this.physics.add.sprite(18198, 340, 'jumps', 'woodenFence'),
+            this.physics.add.sprite(19815, 365, 'jumps', 'stump'),
+            this.physics.add.sprite(22090, 340, 'jumps', 'blueFence'),
+        ]
 
-        // this.jump2 = this.physics.add.sprite(1500, this.runHeight+60, 'jumps', 'wall')
-        // this.jump2.body.setSize(5, 50, false).setOffset(10, 50);
+        this.jumpsArray.forEach(jump => {
+            switch (jump.frame.name) {
+                case 'blueFence':
+                    jump.body.setSize(5, 50, false).setOffset(10, 50);
+                    break;
+                case 'hayBale':
+                    jump.body.setSize(5, 50, false).setOffset(15, 10);
+                    break;
+                case 'hedge':
+                    jump.body.setSize(5, 50, false).setOffset(30, 10);
+                    break;
+                case 'log':
+                    jump.body.setSize(5, 50, false).setOffset(10, 10);
+                    break;
+                case 'stump':
+                    jump.body.setSize(5, 50, false).setOffset(30, 10);
+                    break;
+                case 'wall':
+                    jump.body.setSize(5, 50, false).setOffset(10, 50);
+                    break;
+                case 'waterTrough':
+                    jump.body.setSize(5, 50, false).setOffset(10, 10);
+                    break;
+                case 'woodenFence':
+                    jump.body.setSize(5, 50, false).setOffset(20, 50);
+                    break;
+            
+                default:
+                    console.log("Unknown jump type: " + jump.frame.name)
+                    break;
+            }
+        });
 
         this.jumps = this.physics.add.group({immovable: true});
-        // this.jumps.addMultiple([this.jump1, this.jump2]);
+        this.jumps.addMultiple(this.jumpsArray);
+        
+
+        // Extra settings for debug mode
+        if (this.physics.config.debug) {
+            this.horse.x = 18000
+            // Keep horse still unless buttons are pressed
+            this.canterSpeed = 0
+            // Speed up movement
+            this.gallopSpeed = this.gallopSpeed 
+
+            // Display object coordinates in debug mode
+            this.gemsArray.forEach(gem => {
+                this.gemText = this.add.text(0, 0, 'Static Text Object', { fontFamily: 'Arial', fontSize: 10, color: '#ffffff', align: 'center' });
+                this.gemText.text = "x: " + gem.x + "\ny: " + gem.y;
+                this.gemText.setPosition(gem.x-this.gemText.width/2, gem.y-40);
+            });
+            this.jumpsArray.forEach(jump => {
+                this.jumpText = this.add.text(0, 0, 'Static Text Object', { fontFamily: 'Arial', fontSize: 10, color: '#ffffff', align: 'center' });
+                this.jumpText.text = "x: " + jump.x + "\ny: " + jump.y;
+                this.jumpText.setPosition(jump.x-this.jumpText.width/2, jump.y-40);
+            });
+        }
 
 
         // UI
@@ -224,43 +399,43 @@ class LevelOne extends Phaser.Scene
             // Adjust horse hitbox position whilst jumping
             switch (this.horse.frame.name) {
                 case 'jump0001':
-                    this.horse.body.setSize(150, 90, false).setOffset(90, 85);
+                    this.horse.body.setSize(150, 105, false).setOffset(90, 70);
                     break;
                 case 'jump0002':
-                    this.horse.body.setSize(150, 90, false).setOffset(110, 50);
+                    this.horse.body.setSize(150, 105, false).setOffset(110, 35);
                     break;
                 case 'jump0003':
-                    this.horse.body.setSize(150, 90, false).setOffset(110, 40);
+                    this.horse.body.setSize(150, 105, false).setOffset(110, 25);
                     break;
                 case 'jump0004':
-                    this.horse.body.setSize(150, 90, false).setOffset(110, 35);
+                    this.horse.body.setSize(150, 105, false).setOffset(110, 20);
                     break;
                 case 'jump0005':
-                    this.horse.body.setSize(150, 90, false).setOffset(110, 35);
+                    this.horse.body.setSize(150, 105, false).setOffset(110, 20);
                     break;
                 case 'jump0006':
-                    this.horse.body.setSize(150, 90, false).setOffset(110, 35);
+                    this.horse.body.setSize(150, 105, false).setOffset(110, 20);
                     break;
                 case 'jump0007':
-                    this.horse.body.setSize(150, 90, false).setOffset(110, 35);
+                    this.horse.body.setSize(150, 105, false).setOffset(110, 20);
                     break;
                 case 'jump0008':
-                    this.horse.body.setSize(150, 90, false).setOffset(115, 40);
+                    this.horse.body.setSize(150, 105, false).setOffset(115, 25);
                     break;
                 case 'jump0009':
-                    this.horse.body.setSize(150, 90, false).setOffset(110, 50);
+                    this.horse.body.setSize(150, 105, false).setOffset(110, 35);
                     break;
                 case 'jump0010':
-                    this.horse.body.setSize(150, 90, false).setOffset(110, 70);
+                    this.horse.body.setSize(150, 105, false).setOffset(110, 55);
                     break;
                     
                 case 'jump0011':
-                    this.horse.body.setSize(150, 90, false).setOffset(90, 100);
+                    this.horse.body.setSize(150, 105, false).setOffset(90, 85);
                     this.horseMovement = this.horseMovements.running
                     break;
             
                 default:
-                    this.horse.body.setSize(150, 90, false).setOffset(90, 100);
+                    this.horse.body.setSize(150, 105, false).setOffset(90, 90);
                     break;
             }
         }
@@ -269,8 +444,10 @@ class LevelOne extends Phaser.Scene
                 // Horse skid
                 if (this.horseMovement !== this.horseMovements.skidding) {
                     this.horseMovement = this.horseMovements.skidding
-                    this.horse.setVelocityX(this.canterSpeed);
-                    this.horse.body.setSize(150, 90, false).setOffset(70, 100);
+                    if (!this.physics.config.debug) {
+                        this.horse.setVelocityX(this.canterSpeed);
+                    }
+                    this.horse.body.setSize(150, 105, false).setOffset(70, 95);
                     this.horse.play('slideStart') 
                 }
                 
@@ -296,14 +473,23 @@ class LevelOne extends Phaser.Scene
                 // Horse gallop when right arrow key is down
                 this.horseMovement = this.horseMovements.galloping
                 this.horse.setVelocityX(this.gallopSpeed);
-                this.horse.body.setSize(150, 90, false).setOffset(70, 100);
+                this.horse.body.setSize(150, 105, false).setOffset(70, 95);
                 this.horse.play('gallop')
+            }
+            else if (this.physics.config.debug && this.cursors.left.isDown) {
+                if (this.horseMovement !== this.horseMovements.galloping) {
+                    // Allow backwards movement in debug mode
+                    this.horseMovement = this.horseMovements.galloping
+                    this.horse.setVelocityX(-this.gallopSpeed);
+                    this.horse.body.setSize(150, 105, false).setOffset(70, 95);
+                    this.horse.playReverse('gallop')
+                }
             }
             else if (!this.cursors.right.isDown && this.horseMovement !== this.horseMovements.cantering) {
                 // Horse canter if right arrow key is not down
                 this.horseMovement = this.horseMovements.cantering
                 this.horse.setVelocityX(this.canterSpeed);
-                this.horse.body.setSize(150, 90, false).setOffset(70, 100);
+                this.horse.body.setSize(150, 105, false).setOffset(70, 95);
                 this.horse.play('canter')
             }
             else if (this.spaceBar.isDown) {
@@ -321,59 +507,59 @@ class LevelOne extends Phaser.Scene
                 function() {
                     if (gem.visible) {
                         gem.setVisible(false)
-                        console.log(gem.frame.name)
+                        let points = 0
                         switch (gem.frame.name) {
                             case "gemBlue5":
-                                this.score += 5
+                                points += 5
                                 break;
                             case "gemPink10":
-                                this.score += 10
+                                points += 10
                                 break;
                             case "gemYellow15":
-                                this.score += 15
+                                points += 15
                                 break;
                             case "gemBlue20":
-                                this.score += 20
+                                points += 20
                                 break;
                             case "gemPink25":
-                                this.score += 25
+                                points += 25
                                 break;
                             case "gemYellow30":
-                                this.score += 30
+                                points += 30
                                 break;
                             case "gemBlue35":
-                                this.score += 35
+                                points += 35
                                 break;
                             case "gemPink40":
-                                this.score += 40
+                                points += 40
                                 break;
                             case "gemYellow45":
-                                this.score += 45
+                                points += 45
                                 break;
                             case "gemBlue50":
-                                this.score += 50
+                                points += 50
                                 break;
                             case "gemPink55":
-                                this.score += 55
+                                points += 55
                                 break;
                             case "gemYellow60":
-                                this.score += 60
+                                points += 60
                                 break;
                             case "gemBlue65":
-                                this.score += 65
+                                points += 65
                                 break;
                             case "gemPink70":
-                                this.score += 70
+                                points += 70
                                 break;
                             case "gemYellow75":
-                                this.score += 75
+                                points += 75
                                 break;
                         
                             default:
                                 console.log("Unknown gem: " + gem.frame.name)
                                 break;
                         }
-
+                        this.score += points
                         this.scoreText.text = this.score
                         this.scoreText.setPosition(445-this.scoreText.width/2, 40-this.scoreText.height/2);
                     }
@@ -388,6 +574,21 @@ class LevelOne extends Phaser.Scene
             this.jumps,
             function() {
                     this.isSkidding = true
+            },
+            null,
+            this);
+
+        // End gate
+        this.physics.overlap(
+            this.horse,
+            [this.endGate],
+            function() {
+                    if (!this.done) {
+                        this.done = true
+                        this.clock.pause()
+                        this.timeBonus = this.levelTime -  Math.ceil(this.clock.now / 1000)
+                        this.finalScore = this.score + this.timeBonus
+                    }
             },
             null,
             this);
