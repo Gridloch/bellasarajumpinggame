@@ -1,6 +1,9 @@
 playMusic = true
 playGame = false
 backgroundMusic = null
+goToStartScreen = false
+firstLoad = true
+done = false
 
 
 class JumpingGameStart extends Phaser.Scene 
@@ -22,11 +25,12 @@ class JumpingGameStart extends Phaser.Scene
 
     create ()
     {
+
         // Music
+        this.sound.removeByKey('background_music');
         backgroundMusic = this.sound.add('background_music');
         backgroundMusic.loop = true; 
         backgroundMusic.play();
-
 
         // Start screen
         const start = this.add.image(444, 234, 'start').setScrollFactor(0)
@@ -39,9 +43,9 @@ class JumpingGameStart extends Phaser.Scene
 
 
         // Text for start button
-        // this.startText = this.add.text(443, 234, 'Static Text Object', { fontFamily: 'Arial', fontSize: 20, color: '#ffffff', align: 'center' });
-        // this.startText.text = langData.start_game;
-        // this.startText.setPosition(450-this.startText.width/2, 295-this.startText.height/2);
+        this.startText = this.add.text(443, 234, 'Static Text Object', { fontFamily: 'Arial', fontSize: 20, color: '#ffffff', align: 'center' });
+        this.startText.text = langData.start_game;
+        this.startText.setPosition(450-this.startText.width/2, 295-this.startText.height/2);
 
 
         // UI
@@ -67,6 +71,7 @@ class JumpingGameStart extends Phaser.Scene
     update () 
     {
         if (playGame) {
+            done = false
             this.scene.start('LevelOne');
         }
     }
