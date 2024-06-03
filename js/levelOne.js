@@ -14,8 +14,7 @@ class LevelOne extends Phaser.Scene
         jumping: 'jumping',
         skidding: 'skidding'
     }
-    horseMovement = this.horseMovements.running
-    isSkidding = false
+    horseMovement = this.horseMovements.cantering
     skidLoop = 0
     levelEnd = 22941
     levelTime = 50
@@ -35,6 +34,7 @@ class LevelOne extends Phaser.Scene
         this.load.atlas('horse', './images/horse.png', './images/horse.json');
         this.load.atlas('jumps', './images/jumps.png', './images/jumps.json');
         this.load.atlas('gems', './images/gems.png', './images/gems.json');
+        this.load.atlas('horseshoe', './images/horseshoe.png', './images/horseshoe.json');
         this.load.atlas('backgroundObjects', './images/backgroundObjects.png', './images/backgroundObjects.json');
         this.load.image('endGate', './images/endGate.png');
 
@@ -48,6 +48,7 @@ class LevelOne extends Phaser.Scene
     { 
         this.data = data
         this.score = 0
+        this.horseshoes = 0
         this.timeEnd = false // Should become true on game end
 
         // Inputs
@@ -68,7 +69,7 @@ class LevelOne extends Phaser.Scene
         this.add.image(444, 30, 'scoreBoard').setScrollFactor(0) 
         // Horseshoe Display
         this.horseshoeText = this.add.text(0, 0, 'Static Text Object', { fontFamily: 'Arial', fontSize: 30, color: '#ffffff', align: 'center' }).setScrollFactor(0);
-        this.horseshoeText.text = "0 x ";
+        this.horseshoeText.text = this.horseshoes + " x ";
         this.horseshoeText.setPosition(320-this.horseshoeText.width/2, 35-this.horseshoeText.height/2);
         // Score Display
         this.scoreNameText = this.add.text(0, 0, 'Static Text Object', { fontFamily: 'Arial', fontSize: 10, color: '#ffffff', align: 'center' }).setScrollFactor(0);
@@ -209,6 +210,21 @@ class LevelOne extends Phaser.Scene
         // Start and End Gates
         this.endGate = this.physics.add.image(this.levelEnd - 83, 270, 'endGate').setOrigin(0, .5)
         this.endGate.body.setOffset(70, 0);
+
+
+        // Horseshoe
+        this.horseshoe = this.physics.add.sprite(6900, 220, 'horseshoe', '1')
+        if (!this.anims.exists('horseshoe')) {
+            this.anims.create({
+                key: 'horseshoe',
+                frames: this.anims.generateFrameNumbers('horseshoe', { frames: [
+                    '1', '2'
+                ] }),
+                frameRate: 10,
+                repeat: -1
+            });
+        }
+        this.horseshoe.play('horseshoe')
 
 
         // Gems
@@ -439,9 +455,10 @@ class LevelOne extends Phaser.Scene
         // Extra settings for debug mode
         if (this.physics.config.debug) {
             // Start at specified x
-            // this.horse.x = 22500
+            this.horse.x = 20000
             // Keep horse still unless buttons are pressed
             this.canterSpeed = 0
+            this.horse.setVelocityX(this.canterSpeed);
             // Speed up movement
             this.gallopSpeed = this.gallopSpeed 
 
@@ -615,67 +632,6 @@ class LevelOne extends Phaser.Scene
                 this.horse.play('canter')
             }
         }
-        
-
-        // else {
-        //     if (this.isSkidding) {
-        //         // Horse skid
-        //         this.isSkidding = false
-
-        //         if (this.horseMovement !== this.horseMovements.skidding) {
-        //             this.horseMovement = this.horseMovements.skidding
-        //             if (!this.physics.config.debug) {
-        //                 this.horse.setVelocityX(this.skidSpeed);
-        //             }
-        //             this.horse.body.setSize(150, 105, false).setOffset(70, 95);
-        //             this.horse.play('slideStart') 
-        //             this.skidLoop = 0
-        //         }
-                
-        //         // Loop slide animation while skidding
-        //         if (this.horse.frame.name === 'slide0001') {
-        //             this.horse.play('slide') 
-        //         }
-        //     }
-        //     else if (this.horseMovement === this.horseMovements.skidding)
-        //     {
-        //         if (this.skidLoop < 2 && this.horse.frame.name === 'slide0006') {
-        //             this.horse.play('slide')
-        //             this.skidLoop += 1
-        //         }
-        //         // End slide animation and continue running after done skidding
-        //         if (this.horse.frame.name === 'slide0009') {
-        //             this.horseMovement = this.horseMovements.running
-        //         }
-        //         else if (this.skidLoop >= 2 && this.horse.frame.name !== 'slide0007' && this.horse.frame.name !== 'slide0008') {
-        //             this.horse.play('slideEnd')
-        //         }
-        //     }
-        //     else if (this.cursors.right.isDown && this.horseMovement !== this.horseMovements.galloping)
-        //     {
-        //         // Horse gallop when right arrow key is down
-        //         this.horseMovement = this.horseMovements.galloping
-        //         this.horse.setVelocityX(this.gallopSpeed);
-        //         this.horse.body.setSize(150, 105, false).setOffset(70, 95);
-        //         this.horse.play('gallop')
-        //     }
-        //     else if (this.physics.config.debug && this.cursors.left.isDown) {
-        //         if (this.horseMovement !== this.horseMovements.galloping) {
-        //             // Allow backwards movement in debug mode
-        //             this.horseMovement = this.horseMovements.galloping
-        //             this.horse.setVelocityX(-this.gallopSpeed);
-        //             this.horse.body.setSize(150, 105, false).setOffset(70, 95);
-        //             this.horse.playReverse('gallop')
-        //         }
-        //     }
-        //     else if (!this.cursors.right.isDown && this.horseMovement !== this.horseMovements.cantering) {
-        //         // Horse canter if right arrow key is not down
-        //         this.horseMovement = this.horseMovements.cantering
-        //         this.horse.setVelocityX(this.canterSpeed);
-        //         this.horse.body.setSize(150, 105, false).setOffset(70, 95);
-        //         this.horse.play('canter')
-        //     }
-        // }
 
         // Gems
         this.gems.getChildren().forEach(gem => {
@@ -746,6 +702,21 @@ class LevelOne extends Phaser.Scene
                 this);
         });
 
+        // Horseshoe
+        this.physics.overlap(
+            this.horse,
+            this.horseshoe,
+            function() {
+                    if (this.horseshoe.visible) {
+                        this.horseshoe.setVisible(false)
+                        this.horseshoes += 1
+                        this.horseshoeText.text = this.horseshoes + " x ";
+                        this.horseshoeText.setPosition(320-this.horseshoeText.width/2, 35-this.horseshoeText.height/2);
+                    }
+            },
+            null,
+            this);
+
         // Jumps
         this.physics.overlap(
             this.horse,
@@ -798,14 +769,18 @@ class LevelOne extends Phaser.Scene
 
                         let endLevelText = this.add.text(0, 0, 'Static Text Object', { fontFamily: 'Arial', fontSize: 15, color: '#ffffff', align: 'center' }).setScrollFactor(0);
                         endLevelText.text = langData.level_score + " = " + finalScore + " " + langData.points;
-                        endLevelText.setPosition(443-endGemText.width/2, 245-endGemText.height/2);
+                        endLevelText.setPosition(443-endLevelText.width/2, 245-endLevelText.height/2);
+
+                        let endHorseshoeText = this.add.text(0, 0, 'Static Text Object', { fontFamily: 'Arial', fontSize: 15, color: '#ffffff', align: 'center' }).setScrollFactor(0);
+                        this.add.sprite(433, 267, 'horseshoe', 'icon').setScale(.5).setScrollFactor(0)
+                        endHorseshoeText.text = " = " + this.horseshoes;
+                        endHorseshoeText.setPosition(456-endHorseshoeText.width/2, 270-endHorseshoeText.height/2);
                     }
             },
             null,
             this);
 
             if (nextScreen) {
-                // Need to figure this out properly - might need to load some things in with a preload scene to prevent duplication?
                 nextScreen = false
                 this.scene.start('StartScreen', {backgroundMusic: this.data.backgroundMusic, playMusic: this.data.playMusic});
                 this.scene.stop('LevelOne')
