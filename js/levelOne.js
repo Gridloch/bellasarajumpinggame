@@ -8,7 +8,7 @@ class LevelOne extends Phaser.Scene
     skidSpeed = 300
     runHeight = 280
     horseMovements = {
-        running: 'running',
+        backwards: 'backwards',
         cantering: 'cantering',
         galloping: 'galloping',
         jumping: 'jumping',
@@ -439,7 +439,7 @@ class LevelOne extends Phaser.Scene
         // Extra settings for debug mode
         if (this.physics.config.debug) {
             // Start at specified x
-            this.horse.x = 22500
+            // this.horse.x = 22500
             // Keep horse still unless buttons are pressed
             this.canterSpeed = 0
             // Speed up movement
@@ -491,10 +491,52 @@ class LevelOne extends Phaser.Scene
 
 
         // Horse movement
-        /* This needs a rewrite to make sure the horse knows what it's doing
-        *  Pehaps separate out the control logic to set the movements from the animation logic?
-        */ 
-        if (this.horseMovement === this.horseMovements.jumping) {
+        // Controls
+        if (this.spaceBar.isDown && this.horseMovement !== this.horseMovements.skidding) {
+            // Horse jump if spacebar is pressed
+            this.horseMovement = this.horseMovements.jumping
+        }
+        else if (this.cursors.right.isDown && this.horseMovement !== this.horseMovements.skidding && this.horseMovement !== this.horseMovements.jumping) {
+            // Horse gallop when right arrow key is down and horse is not jumping or sliding
+            this.horseMovement = this.horseMovements.galloping
+        }
+        else if (this.physics.config.debug && this.cursors.left.isDown && this.horseMovement !== this.horseMovements.skidding && this.horseMovement !== this.horseMovements.jumping) {
+            // Allow backwards movement in debug mode when left arrow key is down and horse is not jumping or sliding
+            this.horseMovement = this.horseMovements.backwards
+        }
+        else if (!this.cursors.right.isDown && this.horseMovement !== this.horseMovements.skidding && this.horseMovement !== this.horseMovements.jumping) {
+            // Horse canter if right arrow key is not down and horse is not jumping or sliding
+            this.horseMovement = this.horseMovements.cantering
+        }
+        // Animation
+        if (this.horseMovement === this.horseMovements.skidding) {
+            // Start slide animation
+            if (!this.horse.frame.name.includes('slide')) {
+                this.horse.play('slideStart')
+                this.skidLoop = 0
+                this.horse.setVelocityX(this.skidSpeed);
+                this.horse.body.setSize(150, 105, false).setOffset(70, 95);
+            }
+            // Loop sliding animation
+            else if ((this.horse.frame.name === 'slide0001' || this.horse.frame.name === 'slide0006') && this.skidLoop < 3) {
+                console.log('Frame: ' + this.horse.frame.name + ' Loop: ' + this.skidLoop)
+                this.horse.play('slide')
+                this.skidLoop += 1
+            }
+            // End slide animation
+            else if (this.horse.frame.name === 'slide0006' && this.skidLoop >= 3) {
+                this.horse.play('slideEnd')
+            }
+            // Return to running after done sliding
+            else if (this.horse.frame.name === 'slide0009') {
+                this.horseMovement = this.horseMovements.cantering
+            }
+        }
+        else if (this.horseMovement === this.horseMovements.jumping) {
+            // Play jump animation
+            if (!this.horse.frame.name.includes('jump')) {
+                this.horse.play('jump')
+            }
             // Adjust horse hitbox position whilst jumping
             switch (this.horse.frame.name) {
                 case 'jump0001':
@@ -530,78 +572,110 @@ class LevelOne extends Phaser.Scene
                     
                 case 'jump0011':
                     this.horse.body.setSize(150, 105, false).setOffset(90, 85);
-                    this.horseMovement = this.horseMovements.running
+                    this.horseMovement = this.horseMovements.cantering
                     break;
             
                 default:
-                    this.horse.body.setSize(150, 105, false).setOffset(90, 90);
+                    this.horse.body.setSize(150, 105, false).setOffset(70, 95);
+                    this.horseMovement = this.horseMovements.cantering
                     break;
             }
+            // Adjust speed
+            if (this.cursors.right.isDown && this.horseMovement !== this.horseMovements.skidding) {
+                // Horse gallop speed when right arrow key is down
+                this.horse.setVelocityX(this.gallopSpeed);
+            }
+            else if (this.physics.config.debug && this.cursors.left.isDown && this.horseMovement !== this.horseMovements.skidding) {
+                // Backwards movement in debug mode when left arrow key is down
+                this.horse.setVelocityX(-this.gallopSpeed);
+            }
+            else if (!this.cursors.right.isDown && this.horseMovement !== this.horseMovements.skidding) {
+                // Horse canter speed if right arrow key is not down
+                this.horse.setVelocityX(this.canterSpeed);
+            }
         }
-        else {
-            if (this.isSkidding) {
-                // Horse skid
-                this.isSkidding = false
-
-                if (this.horseMovement !== this.horseMovements.skidding) {
-                    this.horseMovement = this.horseMovements.skidding
-                    if (!this.physics.config.debug) {
-                        this.horse.setVelocityX(this.skidSpeed);
-                    }
-                    this.horse.body.setSize(150, 105, false).setOffset(70, 95);
-                    this.horse.play('slideStart') 
-                    this.skidLoop = 0
-                }
-                
-                // Loop slide animation while skidding
-                if (this.horse.frame.name === 'slide0001') {
-                    this.horse.play('slide') 
-                }
-            }
-            else if (this.horseMovement === this.horseMovements.skidding)
-            {
-                if (this.skidLoop < 2 && this.horse.frame.name === 'slide0006') {
-                    this.horse.play('slide')
-                    this.skidLoop += 1
-                }
-                // End slide animation and continue running after done skidding
-                if (this.horse.frame.name === 'slide0009') {
-                    this.horseMovement = this.horseMovements.running
-                }
-                else if (this.skidLoop >= 2 && this.horse.frame.name !== 'slide0007' && this.horse.frame.name !== 'slide0008') {
-                    this.horse.play('slideEnd')
-                }
-            }
-            else if (this.cursors.right.isDown && this.horseMovement !== this.horseMovements.galloping)
-            {
-                // Horse gallop when right arrow key is down
-                this.horseMovement = this.horseMovements.galloping
+        else if (this.horseMovement === this.horseMovements.galloping) {
+            if (!this.horse.frame.name.includes('gallop')) {
                 this.horse.setVelocityX(this.gallopSpeed);
                 this.horse.body.setSize(150, 105, false).setOffset(70, 95);
                 this.horse.play('gallop')
             }
-            else if (this.physics.config.debug && this.cursors.left.isDown) {
-                if (this.horseMovement !== this.horseMovements.galloping) {
-                    // Allow backwards movement in debug mode
-                    this.horseMovement = this.horseMovements.galloping
-                    this.horse.setVelocityX(-this.gallopSpeed);
-                    this.horse.body.setSize(150, 105, false).setOffset(70, 95);
-                    this.horse.playReverse('gallop')
-                }
+        }
+        else if (this.horseMovement === this.horseMovements.backwards) {
+            if (!this.horse.frame.name.includes('gallop')) {
+                this.horse.setVelocityX(-this.gallopSpeed);
+                this.horse.body.setSize(150, 105, false).setOffset(70, 95);
+                this.horse.play('gallop')
             }
-            else if (!this.cursors.right.isDown && this.horseMovement !== this.horseMovements.cantering) {
-                // Horse canter if right arrow key is not down
-                this.horseMovement = this.horseMovements.cantering
+        }
+        else if (this.horseMovement === this.horseMovements.cantering) {
+            if (!this.horse.frame.name.includes('canter')) {
                 this.horse.setVelocityX(this.canterSpeed);
                 this.horse.body.setSize(150, 105, false).setOffset(70, 95);
                 this.horse.play('canter')
             }
-            else if (this.spaceBar.isDown) {
-                // Horse jump if spacebar is pressed
-                this.horseMovement = this.horseMovements.jumping
-                this.horse.play('jump')
-            }
         }
+        
+
+        // else {
+        //     if (this.isSkidding) {
+        //         // Horse skid
+        //         this.isSkidding = false
+
+        //         if (this.horseMovement !== this.horseMovements.skidding) {
+        //             this.horseMovement = this.horseMovements.skidding
+        //             if (!this.physics.config.debug) {
+        //                 this.horse.setVelocityX(this.skidSpeed);
+        //             }
+        //             this.horse.body.setSize(150, 105, false).setOffset(70, 95);
+        //             this.horse.play('slideStart') 
+        //             this.skidLoop = 0
+        //         }
+                
+        //         // Loop slide animation while skidding
+        //         if (this.horse.frame.name === 'slide0001') {
+        //             this.horse.play('slide') 
+        //         }
+        //     }
+        //     else if (this.horseMovement === this.horseMovements.skidding)
+        //     {
+        //         if (this.skidLoop < 2 && this.horse.frame.name === 'slide0006') {
+        //             this.horse.play('slide')
+        //             this.skidLoop += 1
+        //         }
+        //         // End slide animation and continue running after done skidding
+        //         if (this.horse.frame.name === 'slide0009') {
+        //             this.horseMovement = this.horseMovements.running
+        //         }
+        //         else if (this.skidLoop >= 2 && this.horse.frame.name !== 'slide0007' && this.horse.frame.name !== 'slide0008') {
+        //             this.horse.play('slideEnd')
+        //         }
+        //     }
+        //     else if (this.cursors.right.isDown && this.horseMovement !== this.horseMovements.galloping)
+        //     {
+        //         // Horse gallop when right arrow key is down
+        //         this.horseMovement = this.horseMovements.galloping
+        //         this.horse.setVelocityX(this.gallopSpeed);
+        //         this.horse.body.setSize(150, 105, false).setOffset(70, 95);
+        //         this.horse.play('gallop')
+        //     }
+        //     else if (this.physics.config.debug && this.cursors.left.isDown) {
+        //         if (this.horseMovement !== this.horseMovements.galloping) {
+        //             // Allow backwards movement in debug mode
+        //             this.horseMovement = this.horseMovements.galloping
+        //             this.horse.setVelocityX(-this.gallopSpeed);
+        //             this.horse.body.setSize(150, 105, false).setOffset(70, 95);
+        //             this.horse.playReverse('gallop')
+        //         }
+        //     }
+        //     else if (!this.cursors.right.isDown && this.horseMovement !== this.horseMovements.cantering) {
+        //         // Horse canter if right arrow key is not down
+        //         this.horseMovement = this.horseMovements.cantering
+        //         this.horse.setVelocityX(this.canterSpeed);
+        //         this.horse.body.setSize(150, 105, false).setOffset(70, 95);
+        //         this.horse.play('canter')
+        //     }
+        // }
 
         // Gems
         this.gems.getChildren().forEach(gem => {
@@ -677,7 +751,7 @@ class LevelOne extends Phaser.Scene
             this.horse,
             this.jumps,
             function() {
-                    this.isSkidding = true
+                    this.horseMovement = this.horseMovements.skidding
             },
             null,
             this);
