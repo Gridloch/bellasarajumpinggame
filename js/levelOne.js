@@ -27,12 +27,11 @@ class LevelOne extends Phaser.Scene
 
     preload ()
     {
-        this.load.image('mountains', './images/mountains.png');
-        this.load.image('path', './images/path.png');
         this.load.image('scoreBoard', './images/scoreBoard.png');
         this.load.image('info', './images/info.png');
         this.load.image('infoButton', './images/infoButton.png');
-
+        this.load.image('mountains', './images/mountains.png');
+        this.load.image('path', './images/path.png');
         this.load.atlas('horse', './images/horse.png', './images/horse.json');
         this.load.atlas('jumps', './images/jumps.png', './images/jumps.json');
         this.load.atlas('gems', './images/gems.png', './images/gems.json');
@@ -45,8 +44,12 @@ class LevelOne extends Phaser.Scene
         // this.load.image('Level1', './images/Level1.png');
     }
 
-    create ()
+    create (data)
     { 
+        this.data = data
+        this.score = 0
+        this.timeEnd = false // Should become true on game end
+
         // Inputs
         this.cursors = this.input.keyboard.createCursorKeys();
         this.spaceBar = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
@@ -73,7 +76,7 @@ class LevelOne extends Phaser.Scene
         this.scoreNameText.setPosition(445-this.scoreNameText.width/2, 18-this.scoreNameText.height/2);
 
         this.scoreText = this.add.text(0, 0, 'Static Text Object', { fontFamily: 'Arial', fontSize: 30, color: '#ffffff', align: 'center' }).setScrollFactor(0);
-        this.scoreText.text = "0";
+        this.scoreText.text = this.score;
         this.scoreText.setPosition(445-this.scoreText.width/2, 40-this.scoreText.height/2);
         // Clock
         this.clock.start();
@@ -146,7 +149,7 @@ class LevelOne extends Phaser.Scene
 
         // Horse
         this.horse = this.physics.add.sprite(-100, this.runHeight, 'horse', 'canter0000')
-        this.horse.body.setSize(150, 95, false).setOffset(70, 100);
+        if (!this.anims.exists('canter')) {
             this.anims.create({
                 key: 'canter',
                 frames: this.anims.generateFrameNumbers('horse', { frames: [
@@ -192,6 +195,11 @@ class LevelOne extends Phaser.Scene
                 ] }),
                 frameRate: 20
             });
+        }
+        this.horseMovement = this.horseMovements.cantering
+        this.horse.setVelocityX(this.canterSpeed);
+        this.horse.body.setSize(150, 105, false).setOffset(70, 95);
+        this.horse.play('canter')
 
 
         // Camera
@@ -422,6 +430,10 @@ class LevelOne extends Phaser.Scene
 
         this.infoScreen = this.add.image(443, 234, 'info').setScrollFactor(0).setVisible(false)
         this.infoButton = this.add.image(443, 304, 'infoButton').setScrollFactor(0).setVisible(false)
+            this.infoButton.on('pointerdown', function (pointer)
+            {
+                nextScreen = true
+            });
         
 
         // Extra settings for debug mode
@@ -453,18 +465,18 @@ class LevelOne extends Phaser.Scene
         const musicButton = this.add.sprite(871, 453, 'music_button', 'music_on').setInteractive({ pixelPerfect: true }).setScale(0.7).setScrollFactor(0);
             musicButton.on('pointerdown', function (pointer)
             {
-                if (playMusic) {
-                    backgroundMusic.stop()
+                if (data.playMusic) {
+                    data.backgroundMusic.stop()
                     this.setFrame('music_off_hover')
                 }
                 else {
-                    backgroundMusic.play()
+                    data.backgroundMusic.play()
                     this.setFrame('music_on_hover')
                 }
-                playMusic = !playMusic
+                data.playMusic = !data.playMusic
             });
-            musicButton.on('pointerover', function (pointer) { this.setFrame(`music_${playMusic ? 'on' : 'off'}_hover`);});
-            musicButton.on('pointerout', function (pointer) { this.setFrame(`music_${playMusic ? 'on' : 'off'}`) });
+            musicButton.on('pointerover', function (pointer) { this.setFrame(`music_${data.playMusic ? 'on' : 'off'}_hover`);});
+            musicButton.on('pointerout', function (pointer) { this.setFrame(`music_${data.playMusic ? 'on' : 'off'}`) });
     }
 
     update ()
@@ -479,9 +491,9 @@ class LevelOne extends Phaser.Scene
 
 
         // Horse movement
-        if (this.horseMovement !== this.horseMovements.skidding && this.horse.frame.name.includes('slide')) {
-            this.horseMovement = this.horseMovements.cantering
-        }
+        /* This needs a rewrite to make sure the horse knows what it's doing
+        *  Pehaps separate out the control logic to set the movements from the animation logic?
+        */ 
         if (this.horseMovement === this.horseMovements.jumping) {
             // Adjust horse hitbox position whilst jumping
             switch (this.horse.frame.name) {
@@ -552,7 +564,7 @@ class LevelOne extends Phaser.Scene
                     this.horse.play('slide')
                     this.skidLoop += 1
                 }
-                // End slide animation and continue running afterdone skidding
+                // End slide animation and continue running after done skidding
                 if (this.horse.frame.name === 'slide0009') {
                     this.horseMovement = this.horseMovements.running
                 }
@@ -675,8 +687,8 @@ class LevelOne extends Phaser.Scene
             this.horse,
             [this.endGate],
             function() {
-                    if (!this.done) {
-                        this.done = true
+                    if (!this.timeEnd) {
+                        this.timeEnd = true
                         this.clock.pause()
                         let timeBonus = (this.levelTime * 100) -  Math.ceil(this.clock.now / 10)
                         if (timeBonus < 0) {
@@ -686,10 +698,6 @@ class LevelOne extends Phaser.Scene
 
                         this.infoScreen.setVisible(true)
                         this.infoButton.setVisible(true).setInteractive()
-                            this.infoButton.on('pointerdown', function (pointer)
-                            {
-                                goToStartScreen = true
-                            });
 
                         let levelText = this.add.text(0, 0, 'Static Text Object', { fontFamily: 'Arial', fontSize: 30, color: '#ffffff', align: 'center' }).setScrollFactor(0);
                         let buttonText = this.add.text(0, 0, 'Static Text Object', { fontFamily: 'Arial', fontSize: 15, color: '#ffffff', align: 'center' }).setScrollFactor(0);
@@ -722,10 +730,11 @@ class LevelOne extends Phaser.Scene
             null,
             this);
 
-            if (goToStartScreen) {
-                this.scene.start('JumpingGameStart');
+            if (nextScreen) {
+                // Need to figure this out properly - might need to load some things in with a preload scene to prevent duplication?
+                nextScreen = false
+                this.scene.start('StartScreen', {backgroundMusic: this.data.backgroundMusic, playMusic: this.data.playMusic});
                 this.scene.stop('LevelOne')
-                goToStartScreen = false
             }
     }
 }

@@ -6,8 +6,9 @@
         <meta charset="UTF-8" />
         <script src="//cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.js"></script>
         <script src="https://unpkg.com/@esotericsoftware/spine-phaser@4.1.*/dist/iife/spine-phaser.js"></script>
-        <script src="./js/startScreen.js"></script> 
-        <script src="./js/levelOne.js"></script> 
+        <script src="./js/loadScreen.js"></script>
+        <script src="./js/startScreen.js"></script>
+        <script src="./js/levelOne.js"></script>
         <style type="text/css">
             body {
                 margin: 0;
@@ -60,7 +61,8 @@
                         }
                     },
                     scene: [
-                        JumpingGameStart,
+                        Load,
+                        StartScreen,
                         LevelOne
                     ]
                 };

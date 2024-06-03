@@ -1,16 +1,8 @@
-playMusic = true
-playGame = false
-backgroundMusic = null
-goToStartScreen = false
-firstLoad = true
-done = false
-
-
-class JumpingGameStart extends Phaser.Scene 
+class StartScreen extends Phaser.Scene 
 {
     constructor ()
     {
-        super({ key: 'JumpingGameStart' });
+        super({ key: 'StartScreen' });
     }
 
     preload ()
@@ -23,22 +15,16 @@ class JumpingGameStart extends Phaser.Scene
 
     }
 
-    create ()
+    create (data)
     {
-
-        // Music
-        this.sound.removeByKey('background_music');
-        backgroundMusic = this.sound.add('background_music');
-        backgroundMusic.loop = true; 
-        backgroundMusic.play();
+        this.data = data // Used to get data into update()
 
         // Start screen
         const start = this.add.image(444, 234, 'start').setScrollFactor(0)
         const startInteractive = this.add.graphics().setInteractive(new Phaser.Geom.Rectangle(286, 274, 325, 45), Phaser.Geom.Rectangle.Contains);
             startInteractive.on('pointerdown', function (pointer)
             {
-                playGame = true
-                start.setVisible(false)
+                nextScreen = true
             });
 
 
@@ -54,25 +40,25 @@ class JumpingGameStart extends Phaser.Scene
         const musicButton = this.add.sprite(871, 453, 'music_button', 'music_on').setInteractive({ pixelPerfect: true }).setScale(0.7).setScrollFactor(0);
             musicButton.on('pointerdown', function (pointer)
             {
-                if (playMusic) {
-                    backgroundMusic.stop()
+                if (data.playMusic) {
+                    data.backgroundMusic.stop()
                     this.setFrame('music_off_hover')
                 }
                 else {
-                    backgroundMusic.play()
+                    data.backgroundMusic.play()
                     this.setFrame('music_on_hover')
                 }
-                playMusic = !playMusic
+                data.playMusic = !data.playMusic
             });
-            musicButton.on('pointerover', function (pointer) { this.setFrame(`music_${playMusic ? 'on' : 'off'}_hover`); console.log(playMusic) });
-            musicButton.on('pointerout', function (pointer) { this.setFrame(`music_${playMusic ? 'on' : 'off'}`) });
+            musicButton.on('pointerover', function (pointer) { this.setFrame(`music_${data.playMusic ? 'on' : 'off'}_hover`)});
+            musicButton.on('pointerout', function (pointer) { this.setFrame(`music_${data.playMusic ? 'on' : 'off'}`) });
     }
 
     update () 
     {
-        if (playGame) {
-            done = false
-            this.scene.start('LevelOne');
+        if (nextScreen) {
+            nextScreen = false
+            this.scene.start('LevelOne', {backgroundMusic: this.data.backgroundMusic, playMusic: this.data.playMusic});
         }
     }
 
